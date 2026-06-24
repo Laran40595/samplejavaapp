@@ -5,7 +5,7 @@ pipeline {
 	   steps {
                 echo 'compiling..'
 		git url: 'https://github.com/bloomytech/samplejavaapp'
-		sh script: '/opt/maven/bin/mvn compile'
+		sh script: 'mvn compile'
            }
         }
         stage('codereview-pmd') {
