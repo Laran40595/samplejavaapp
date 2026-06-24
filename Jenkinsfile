@@ -1,41 +1,46 @@
 pipeline {
+
     agent any
+
     stages {
-        stage('compile') {
-	   steps {
-                echo 'compiling..'
-		git url: 'https://github.com/bloomytech/samplejavaapp'
-		sh script: 'mvn compile'
-           }
+
+        stage('Build') {
+
+            steps {
+
+                sh 'mvn clean package'
+
+            }
+
         }
-        stage('codereview-pmd') {
-	   steps {
-                echo 'codereview..'
-		sh script: '/opt/maven/bin/mvn -P metrics pmd:pmd'
-           }
-	   post {
-               success {
-		   recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
-               }
-           }		
+
+
+        stage('Deploy WAR to Tomcat') {
+
+            steps {
+
+                deploy adapters: [
+
+                    tomcat9(
+
+                        credentialsId: 'tomcat-deployer',
+
+                        path: '',
+
+                        url: 'http://100.58.153.235:8081'
+
+                    )
+
+                ],
+
+                contextPath: 'sampleapp',
+
+                war: 'target/sampleapp.war'
+
+            }
+
         }
-        stage('unit-test') {
-	   steps {
-                echo 'unittest..'
-	        sh script: '/opt/maven/bin/mvn test'
-                 }
-	   post {
-               success {
-                   junit 'target/surefire-reports/*.xml'
-               }
-           }			
-        }
-        
-        stage('package') {
-	   steps {
-                echo 'package......'
-		sh script: '/opt/maven/bin/mvn package'	
-           }		
-        }
+
     }
+
 }
